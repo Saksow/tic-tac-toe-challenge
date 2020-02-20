@@ -62,7 +62,16 @@ pytest -q --flake8 --isort --cov=.
 
 *These tests ran successfully on `Ubuntu 18.04.3 LTS`.*
 
-## Technical choice
+## Improvements
+What could we do if we had twice the time?
+* Tests: currently only having unit tests, we should add a fixture representing a test client then
+make API calls. This fixture can have a mocked Storage or FakeStrictRedis injected into the app.
+* UI/CLI: add a wrapper that lets users interact with the API to list available games, start a new
+game and play rounds.
+* Undo: something cool we could add is an "undo" endpoint which can simply remove the latest move
+and allow a player to make another move.
+
+## Technical choice in API
 I took the freedom to deviate from this requirement: 
 >POST /api/games/\<id>: Update the Game with the given ID, replacing its data with the newly POSTed data.
 
