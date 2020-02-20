@@ -28,6 +28,14 @@ You can visit http://0.0.0.0:5000/api/ui/ to see the OpenAPI UI and try the
 API in a browser. There is a description for every operation and further down in `Schemas` you can
 find an explanation for the fields accepted/returned by the API.
 
+## Try the app
+There are 2 demo shell scripts that can let your try the app:
+```shell script
+./new_game.sh
+export DEMO_GAME_ID="<COPY_GAME_ID"
+./play_game.sh
+```
+
 ## Test the app
 To run the automated tests you need to install the dev dependencies.
 
