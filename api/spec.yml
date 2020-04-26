@@ -1,0 +1,261 @@
+openapi: 3.0.1
+info:
+  title: That tic-tac-toe REST API
+  description: A simple but comprehensive REST API for tic-tac-toe.
+  version: 1.0.0
+servers:
+  - url: /api
+tags:
+  - name: Games
+    description: Available operations on Game resource
+
+paths:
+  /games:
+    get:
+      summary: Get a list of all games stored on the server
+      operationId: api.handlers.get_games
+      tags:
+        - Games
+      responses:
+        200:
+          description: All games stored on the server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Game'
+                required:
+                  - games
+    post:
+      summary: Create a new game
+      operationId: api.handlers.create_game
+      description: Data provided in this request cannot be changed after the game has been created
+      tags:
+        - Games
+      requestBody:
+        description: Initial game data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                players:
+                  description: Array of 2 players. Order does not matter and will be assigned randomly.
+                  type: array
+                  uniqueItems: true
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    $ref: '#/components/schemas/Player'
+              required:
+                - players
+        required: true
+      responses:
+        201:
+          description: New game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        400:
+          description: Invalid request body, more info in "detail"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /games/{game_id}:
+    parameters:
+      - $ref: '#/components/parameters/GameIdParam'
+    get:
+      summary: Get game data by its ID
+      operationId: api.handlers.get_game
+      tags:
+        - Games
+      responses:
+        200:
+          description: Game data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        400:
+          description: Invalid game ID, more info in "detail"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /games/{game_id}/moves:
+    parameters:
+      - $ref: '#/components/parameters/GameIdParam'
+    post:
+      summary: Create a new move for a game ID
+      operationId: api.handlers.create_move
+      description: A move represents a game round where one player added a sign to a board
+      tags:
+        - Games
+      requestBody:
+        description: One player move
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerMove'
+        required: true
+      responses:
+        201:
+          description: Game data after the move was completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        400:
+          description: Invalid move, more info in "detail"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    GameIdParam:
+      in: path
+      name: game_id
+      required: true
+      description: Game ID
+      schema:
+        $ref: '#/components/schemas/GameId'
+  schemas:
+    GameId:
+      type: string
+      format: uuid
+    PlayerNumber:
+      description: Player numbers are assigned randomly when creating a game. They are unique only in the game scope.
+      type: integer
+      minimum: 1
+      maximum: 2
+    TileNumber:
+      description: Tile numbers are 1-indexed and start from top left to right, then middle left to righ, then bottom left to right.
+      type: integer
+      minimum: 1
+      maximum: 9
+    Player:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required:
+        - name
+    PlayerMove:
+      description: This represents a single round. One player claims one tile from the board.
+      type: object
+      properties:
+        player_number:
+          $ref: '#/components/schemas/PlayerNumber'
+        tile_number:
+          $ref: '#/components/schemas/TileNumber'
+      required:
+        - player_number
+        - tile_number
+    Game:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/GameId'
+        players:
+          type: array
+          uniqueItems: true
+          minItems: 2
+          maxItems: 2
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Player'
+              - type: object
+                properties:
+                  number:
+                    description: Player number {1, 2} assigned randomly.
+                    $ref: '#/components/schemas/PlayerNumber'
+                  sign:
+                    description: Player sign {"X", "O"} assigned randomly.
+                    type: string
+                    enum:
+                      - X
+                      - O
+                required:
+                  - number
+                  - sign
+        create_time:
+          type: string
+          format: date-time
+        last_update_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - in_progress
+            - done
+        winning_player_number:
+          description: Optional. If the game is `done` this represents the winner.
+          $ref: '#/components/schemas/PlayerNumber'
+          nullable: true
+        next_player_number:
+          description: Optional. If the game is `in_progress` this represents the next player.
+          $ref: '#/components/schemas/PlayerNumber'
+          nullable: true
+        moves:
+          description: Array of game rounds that can be ordered by `create_time`, for example if we need to undo last move.
+          type: array
+          uniqueItems: true
+          maxItems: 9
+          items:
+            allOf:
+              - $ref: '#/components/schemas/PlayerMove'
+              - type: object
+                properties:
+                  create_time:
+                    type: string
+                    format: date-time
+                required:
+                  - create_time
+      required:
+        - id
+        - players
+        - create_time
+        - last_update_time
+        - status
+        - winning_player_number
+        - next_player_number
+        - moves
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        status:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+      required:
+        - detail
+        - status
+        - title

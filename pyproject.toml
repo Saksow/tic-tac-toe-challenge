@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "tic-tac-toe"
+version = "1.0.0"
+description = "A simple but comprehensive REST API for tic-tac-toe"
+authors = ["Seif Allah Tarhouni <tarhouni.sat@gmail.com>"]
+readme = 'the_real_README.md'
+
+[tool.poetry.dependencies]
+python = "~3.6"
+connexion = {extras = ["swagger-ui"], version = "^2.6.0"}
+redis = "^3.4.1"
+flask_injector = "^0.12.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.3.5"
+pytest-flake8 = "^1.0.4"
+pytest-isort = "^0.3.1"
+pytest-cov = "^2.8.1"
+
+[build-system]
+requires = ["poetry==1.0.0"]
+build-backend = "poetry.masonry.api"
