@@ -4,7 +4,7 @@ A simple but comprehensive REST API for tic-tac-toe.
 ## Context
 This is a solution to a coding assignment sent by [Anaconda](
 https://www.anaconda.com/anaconda-careers/). The problem statement can be 
-viewed [here](./README.md).
+viewed [here](./problem.md).
 
 ## Technologies and tools
 This application is based on the following:
